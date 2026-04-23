@@ -1,0 +1,266 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+@import './tokens.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--body-font-size-desktop);
+  line-height: var(--line-height-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-dim);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; }
+h2 { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 600; margin-top: 2.5rem; margin-bottom: 1rem; }
+h3 { font-size: clamp(1.1rem, 2.5vw, 1.4rem); font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; color: var(--accent-soft); }
+
+p {
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--accent-soft);
+  text-decoration: underline;
+}
+
+strong, b {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+em, i {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 1rem 1.5rem;
+  margin: 2rem 0;
+  background: var(--bg-secondary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+ul, ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-glow);
+  color: var(--accent-soft);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Utility classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+}
+
+.content-width {
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Health Disclaimer */
+.health-disclaimer {
+  background: rgba(224, 85, 85, 0.1);
+  border: 1px solid rgba(224, 85, 85, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  font-family: var(--font-ui);
+  color: var(--text-secondary);
+}
+
+.health-disclaimer strong {
+  color: #E05555;
+}
+
+/* Article body content */
+.article-body h2 {
+  color: var(--accent-soft);
+  border-bottom: 1px solid var(--border-accent);
+  padding-bottom: 0.5rem;
+}
+
+.article-body h3 {
+  color: var(--text-primary);
+}
+
+.article-body a {
+  color: var(--accent);
+  border-bottom: 1px solid var(--border-accent);
+}
+
+.article-body a:hover {
+  color: var(--accent-soft);
+  border-bottom-color: var(--accent-soft);
+}
+
+/* FAQ */
+.faq-section {
+  margin: 3rem 0;
+}
+
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.faq-question {
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background var(--transition-fast);
+}
+
+.faq-question:hover {
+  background: var(--bg-elevated);
+}
+
+.faq-answer {
+  padding: 0 1.25rem 1rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Affiliate section */
+.auto-affiliates {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin: 2.5rem 0;
+}
+
+.auto-affiliates h3 {
+  color: var(--accent);
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.auto-affiliates ul {
+  list-style: none;
+  padding: 0;
+}
+
+.auto-affiliates li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.auto-affiliates li:last-child {
+  border-bottom: none;
+}
+
+.auto-affiliates .disclosure {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.affiliate-disclosure {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
+  font-family: var(--font-ui);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    font-size: var(--body-font-size-mobile);
+  }
+  
+  .container {
+    padding: 0 var(--space-md);
+  }
+}
