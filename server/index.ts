@@ -20,6 +20,18 @@ async function createServer() {
   app.set('trust proxy', 1);
   app.use(express.json());
 
+  // www → non-www 301 redirect (must come before all other routes)
+  // Handles: www.kundalinicrisis.com → kundalinicrisis.com
+  app.use((req, res, next) => {
+    const host = req.headers.host || '';
+    if (host.startsWith('www.')) {
+      const nonWww = host.slice(4);
+      const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
+      return res.redirect(301, `${proto}://${nonWww}${req.originalUrl}`);
+    }
+    next();
+  });
+
   // Health check FIRST — must work even if other routes fail
   app.use('/health', healthRouter);
 
