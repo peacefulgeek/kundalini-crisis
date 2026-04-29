@@ -30,7 +30,7 @@ sitemapRouter.get('/', async (req, res) => {
         const { getDb } = await import('../../src/lib/db.mjs');
         const db = await getDb();
         const { rows } = await db.query(
-          'SELECT slug, published_at FROM articles WHERE published = true ORDER BY published_at DESC'
+          `SELECT slug, published_at FROM articles WHERE status = 'published' ORDER BY published_at DESC`
         );
         articlePages = rows;
       } catch { /* fall through */ }
@@ -45,6 +45,8 @@ sitemapRouter.get('/', async (req, res) => {
           try {
             const content = fs.readFileSync(path.join(articlesDir, f), 'utf-8');
             const data = JSON.parse(content);
+            // CRITICAL: Only published articles in sitemap
+            if (data.status === 'queued') return null;
             return { slug: data.slug, published_at: data.published_at };
           } catch {
             return null;

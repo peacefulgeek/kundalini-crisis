@@ -9,14 +9,18 @@ function getArticlesDir(): string {
   return path.join(process.cwd(), 'src', 'data', 'articles');
 }
 
-// Load articles from JSON files (used when DATABASE_URL is not set)
-function loadArticlesFromFiles(): any[] {
+/**
+ * Load PUBLISHED articles from JSON files.
+ * CRITICAL: Only articles with status='published' (or no status field, legacy) are returned.
+ * Queued articles NEVER leak to the public API.
+ */
+function loadPublishedArticles(): any[] {
   const articlesDir = getArticlesDir();
   if (!fs.existsSync(articlesDir)) {
     console.warn('[articles] Articles dir not found:', articlesDir);
     return [];
   }
-  
+
   const files = fs.readdirSync(articlesDir).filter(f => f.endsWith('.json'));
   const articles = files.map(f => {
     try {
@@ -26,18 +30,23 @@ function loadArticlesFromFiles(): any[] {
       return null;
     }
   }).filter(Boolean);
-  
+
+  // CRITICAL: Filter to published only — queued articles stay hidden
+  const published = articles.filter(a => !a.status || a.status === 'published');
+
   // Sort by published_at descending
-  articles.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
-  return articles;
+  published.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+  return published;
 }
 
 async function getArticlesFromDb(limit: number, offset: number, category?: string) {
   try {
     const { getDb } = await import('../../src/lib/db.mjs');
     const db = await getDb();
-    
-    let query = 'SELECT id, slug, title, meta_description, category, tags, image_url, image_alt, reading_time, author, published_at, word_count FROM articles WHERE published = true';
+
+    let query = `SELECT id, slug, title, meta_description, category, tags, image_url, image_alt, 
+                 reading_time, author, published_at, word_count 
+                 FROM articles WHERE status = 'published'`;
     const params: any[] = [];
 
     if (category) {
@@ -50,16 +59,17 @@ async function getArticlesFromDb(limit: number, offset: number, category?: strin
 
     const { rows } = await db.query(query, params);
     const countResult = await db.query(
-      'SELECT COUNT(*) FROM articles WHERE published = true' + (category ? ' AND category = $1' : ''),
+      `SELECT COUNT(*) FROM articles WHERE status = 'published'` + (category ? ' AND category = $1' : ''),
       category ? [category] : []
     );
-    
+
     return { articles: rows, total: parseInt(countResult.rows[0].count) };
   } catch {
     return null;
   }
 }
 
+// GET /api/articles — list published articles
 articlesRouter.get('/', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 20;
@@ -74,8 +84,8 @@ articlesRouter.get('/', async (req, res) => {
       }
     }
 
-    // Fallback to JSON files
-    let articles = loadArticlesFromFiles();
+    // Fallback to JSON files (published only)
+    let articles = loadPublishedArticles();
     if (category) {
       articles = articles.filter(a => a.category === category);
     }
@@ -94,7 +104,7 @@ articlesRouter.get('/', async (req, res) => {
       published_at: a.published_at,
       word_count: a.word_count
     }));
-    
+
     res.json({ articles: paged, total });
   } catch (err) {
     console.error('[articles route]', err);
@@ -102,6 +112,7 @@ articlesRouter.get('/', async (req, res) => {
   }
 });
 
+// GET /api/articles/:slug — single published article
 articlesRouter.get('/:slug', async (req, res) => {
   try {
     // Try DB first
@@ -110,7 +121,7 @@ articlesRouter.get('/:slug', async (req, res) => {
         const { getDb } = await import('../../src/lib/db.mjs');
         const db = await getDb();
         const { rows } = await db.query(
-          'SELECT * FROM articles WHERE slug = $1 AND published = true',
+          `SELECT * FROM articles WHERE slug = $1 AND status = 'published'`,
           [req.params.slug]
         );
         if (rows.length > 0) return res.json(rows[0]);
@@ -120,12 +131,18 @@ articlesRouter.get('/:slug', async (req, res) => {
     // Fallback to JSON files
     const articlesDir = getArticlesDir();
     const filePath = path.join(articlesDir, `${req.params.slug}.json`);
-    
+
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Not found' });
     }
-    
+
     const article = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+
+    // CRITICAL: Never serve queued articles
+    if (article.status === 'queued') {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
     res.json(article);
   } catch (err) {
     console.error('[article route]', err);

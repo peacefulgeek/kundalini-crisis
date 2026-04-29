@@ -109,7 +109,8 @@ for (const f of requiredFiles) {
 // 6. Check cron schedules
 try {
   const cronFile = await fs.readFile('scripts/start-with-cron.mjs', 'utf8');
-  if (!cronFile.includes("'0 6 * * 1-5'")) failures.push('cron-1 missing: Mon-Fri 06:00');
+  // Phase 1/2: fires at 07:00, 10:00, 13:00, 16:00, 19:00 daily (phase logic is internal)
+  if (!cronFile.includes("'0 7 * * *'")) failures.push('cron-1 missing: 07:00 daily');
   if (!cronFile.includes("'0 8 * * 6'")) failures.push('cron-2 missing: Sat 08:00');
   if (!cronFile.includes("'0 3 1 * *'")) failures.push('cron-3 missing: monthly 1st 03:00');
   if (!cronFile.includes("'0 4 1 1,4,7,10 *'")) failures.push('cron-4 missing: quarterly 04:00');
